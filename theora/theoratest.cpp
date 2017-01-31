@@ -144,7 +144,56 @@ int main(int argc, char *argv[])
 	}
 	th_setup_free(theoraSetup);
 
+	// Send any more pages we have to the appropriate streams
+	ogg_page dataPage;
+	while (ogg_sync_pageout(&syncState, &dataPage) > 0)
+		queueDataPage(&dataPage);
+
+	// For testing, just grab the first frame
+	ogg_packet dataPacket;
+	ogg_stream_packetout(&theoraStream, &dataPacket);
+	th_decode_packetin(theoraDecoder, &dataPacket, NULL);
+
+	th_ycbcr_buffer videoFrame;
+	th_decode_ycbcr_out(theoraDecoder, videoFrame);
+
+	// Get frame metadata
+	int lumaFrameWidth      = videoFrame[0].width;
+	int lumaFrameHeight     = videoFrame[0].height;
+	int lumaRowStride       = videoFrame[0].stride;
+	unsigned char *lumaData = videoFrame[0].data;
+	unsigned char *cbData   = videoFrame[1].data;
+	unsigned char *crData   = videoFrame[2].data;
+
+	dbglog(DBG_NOTICE, "Decoded frame is %d x %d with %d-byte stride\n",
+		lumaFrameWidth, lumaFrameHeight, lumaRowStride);
+
+	// Allocate a memory buffer for the YUV422 data
+	unsigned char *yuvData = reinterpret_cast<unsigned char*>(malloc(lumaFrameWidth * lumaFrameHeight * 2));
+	memset(yuvData, 0, lumaFrameWidth * lumaFrameHeight * 2);
+
+	// Copy the YUV420p data into the YUV422 buffer
+	size_t outIndex = 0;
+	for (int y = 0; y < lumaFrameHeight; ++y)
+	{
+		for (int x = 0; x < lumaFrameWidth; ++x)
+		{
+			yuvData[outIndex] = lumaData[x];
+			outIndex += 2;
+		}
+		
+		lumaData += lumaRowStride;
+	}
+	
 	// Shut things down
+	free(yuvData);
+	if (foundTheora)
+	{
+		ogg_stream_clear(&theoraStream);
+		th_decode_free(theoraDecoder);
+		th_comment_clear(&theoraComments);
+		th_info_clear(&theoraInfo);
+	}
 	ogg_sync_clear(&syncState);
 	fclose(videoFile);
 	return 0;
