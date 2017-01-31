@@ -121,3 +121,33 @@ void convertYUV444pTo422(unsigned char *outBuffer, const th_ycbcr_buffer &inBuff
 		CrData += Cr.stride;
 	}
 }
+
+void convertYUV420pTo422(unsigned char *outBuffer, const unsigned char *inBuffer, int width, int height)
+{
+	const int totalPixels = width * height;
+	
+	const unsigned char *YData  = inBuffer;
+	const unsigned char *CbData = YData + totalPixels;
+	const unsigned char *CrData = CbData + (totalPixels / 4);
+	
+	int Yindex = 0;
+	for (int y = 0; y < height; ++y)
+	{
+		for (int x = 0, uv = 0; x < width; x += 2, ++uv)
+		{
+			outBuffer[Yindex + 0] = YData[x];
+			outBuffer[Yindex + 1] = CbData[uv];
+			outBuffer[Yindex + 2] = YData[x + 1];
+			outBuffer[Yindex + 3] = CrData[uv];
+			
+			Yindex += 4;
+		}
+		
+		YData += width;
+		if (y % 2 == 1)
+		{
+			CbData += width / 2;
+			CrData += width / 2;
+		}
+	}
+}
