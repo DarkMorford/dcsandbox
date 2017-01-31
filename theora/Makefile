@@ -8,7 +8,7 @@ TARGET = dctheora.elf
 
 # List all of your C files here, but change the extension to ".o"
 # Include "romdisk.o" if you want a rom disk.
-OBJS = theoratest.o romdisk.o
+OBJS = theoratest.o romdisk.o convertYUV.o
 
 # If you define this, the Makefile.rules will create a romdisk.o for you
 # from the named dir.
@@ -36,3 +36,5 @@ run: $(TARGET)
 dist:
 	rm -f $(OBJS) romdisk.o romdisk.img
 	$(KOS_STRIP) $(TARGET)
+
+theoratest.o convertYUV.o: convertYUV.h
