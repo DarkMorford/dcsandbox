@@ -3,6 +3,8 @@
 
 #include <theora/codec.h>
 
-void convertYUV420to422(unsigned char *outBuffer, const th_ycbcr_buffer &inBuffer);
+void convertYUV420pTo422(unsigned char *outBuffer, const th_ycbcr_buffer &inBuffer);
+void convertYUV422pTo422(unsigned char *outBuffer, const th_ycbcr_buffer &inBuffer);
+void convertYUV444pTo422(unsigned char *outBuffer, const th_ycbcr_buffer &inBuffer);
 
 #endif
