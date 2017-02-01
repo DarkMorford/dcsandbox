@@ -30,10 +30,29 @@ size_t fillSyncBuffer(FILE *inFile, ogg_sync_state *sync)
 	return bytesRead;
 }
 
+inline int nextPowerOfTwo(int n)
+{
+	// Special-case negative values
+	if (n < 0)
+		return 0;
+	
+	--n;
+	
+	n |= (n >> 1);
+	n |= (n >> 2);
+	n |= (n >> 4);
+	n |= (n >> 8);
+	n |= (n >> 16);
+	
+	return n + 1;
+}
+
 int main(int argc, char *argv[])
 {
-	dbglog_set_level(DBG_NOTICE);
+	dbglog_set_level(DBG_INFO);
 	dbglog(DBG_NOTICE, "%s\n", th_version_string());
+	
+	pvr_init_defaults();
 
 	// Open the video file
 	FILE *videoFile = fopen("/rd/320x240.ogg", "rb");
@@ -160,16 +179,24 @@ int main(int argc, char *argv[])
 	th_decode_ycbcr_out(theoraDecoder, videoFrame);
 
 	// Get frame metadata
-	int lumaFrameWidth  = videoFrame[0].width;
-	int lumaFrameHeight = videoFrame[0].height;
+	int textureWidth  = nextPowerOfTwo(videoFrame[0].width);
+	int textureHeight = nextPowerOfTwo(videoFrame[0].height);
+	int texBufferSize = textureWidth * textureHeight * 2;
 
 	// Allocate a memory buffer for the YUV422 data
-	unsigned char *yuvData = reinterpret_cast<unsigned char*>(memalign(32, lumaFrameWidth * lumaFrameHeight * 2));
-	sq_clr(yuvData, lumaFrameWidth * lumaFrameHeight * 2);
+	pvr_ptr_t textureData = pvr_mem_alloc(texBufferSize);
+	unsigned char *yuvData = reinterpret_cast<unsigned char*>(memalign(32, texBufferSize));
+	sq_set32(yuvData, 0x80008000, texBufferSize);
 
+	// TODO: Fix this function to consider the texture width
 	convertYUV420pTo422(yuvData, videoFrame);
 	
+	// Copy the YUV422 data to the PVR's memory
+	sq_cpy(textureData, yuvData, texBufferSize);
+	
 	// Shut things down
+	pvr_mem_free(textureData);
+	pvr_shutdown();
 	free(yuvData);
 	if (foundTheora)
 	{
