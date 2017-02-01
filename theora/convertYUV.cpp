@@ -30,10 +30,10 @@ void convertYUV420pTo422(unsigned char *outBuffer, const th_ycbcr_buffer &inBuff
 	{
 		for (int x = 0, uv = 0; x < frameWidth; x += 2, ++uv)
 		{
-			outBuffer[Yindex + 0] = YData[x];
-			outBuffer[Yindex + 1] = CbData[uv];
-			outBuffer[Yindex + 2] = YData[x + 1];
-			outBuffer[Yindex + 3] = CrData[uv];
+			outBuffer[Yindex + 0] = CbData[uv];
+			outBuffer[Yindex + 1] = YData[x];
+			outBuffer[Yindex + 2] = CrData[uv];
+			outBuffer[Yindex + 3] = YData[x + 1];
 
 			Yindex += 4;
 		}
@@ -71,10 +71,10 @@ void convertYUV422pTo422(unsigned char *outBuffer, const th_ycbcr_buffer &inBuff
 	{
 		for (int x = 0, uv = 0; x < frameWidth; x += 2, ++uv)
 		{
-			outBuffer[Yindex + 0] = YData[x];
-			outBuffer[Yindex + 1] = CbData[uv];
-			outBuffer[Yindex + 2] = YData[x + 1];
-			outBuffer[Yindex + 3] = CrData[uv];
+			outBuffer[Yindex + 0] = CbData[uv];
+			outBuffer[Yindex + 1] = YData[x];
+			outBuffer[Yindex + 2] = CrData[uv];
+			outBuffer[Yindex + 3] = YData[x + 1];
 
 			Yindex += 4;
 		}
@@ -108,10 +108,10 @@ void convertYUV444pTo422(unsigned char *outBuffer, const th_ycbcr_buffer &inBuff
 	{
 		for (int x = 0, uv = 0; x < frameWidth; x += 2, uv += 2)
 		{
-			outBuffer[Yindex + 0] = YData[x];
-			outBuffer[Yindex + 1] = (CbData[uv] + CbData[uv + 1]) / 2;
-			outBuffer[Yindex + 2] = YData[x + 1];
-			outBuffer[Yindex + 3] = (CrData[uv] + CrData[uv + 1]) / 2;
+			outBuffer[Yindex + 0] = (CbData[uv] + CbData[uv + 1]) / 2;
+			outBuffer[Yindex + 1] = YData[x];
+			outBuffer[Yindex + 2] = (CrData[uv] + CrData[uv + 1]) / 2;
+			outBuffer[Yindex + 3] = YData[x + 1];
 
 			Yindex += 4;
 		}
@@ -135,10 +135,10 @@ void convertYUV420pTo422(unsigned char *outBuffer, const unsigned char *inBuffer
 	{
 		for (int x = 0, uv = 0; x < width; x += 2, ++uv)
 		{
-			outBuffer[Yindex + 0] = YData[x];
-			outBuffer[Yindex + 1] = CbData[uv];
-			outBuffer[Yindex + 2] = YData[x + 1];
-			outBuffer[Yindex + 3] = CrData[uv];
+			outBuffer[Yindex + 0] = CbData[uv];
+			outBuffer[Yindex + 1] = YData[x];
+			outBuffer[Yindex + 2] = CrData[uv];
+			outBuffer[Yindex + 3] = YData[x + 1];
 			
 			Yindex += 4;
 		}
