@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
 	sq_set32(yuvData, 0x80008000, texBufferSize);
 
 	// TODO: Fix this function to consider the texture width
-	convertYUV420pTo422(yuvData, videoFrame);
+	convertYUV420pTo422(yuvData, videoFrame, textureWidth);
 	
 	// Copy the YUV422 data to the PVR's memory
 	sq_cpy(textureData, yuvData, texBufferSize);
