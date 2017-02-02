@@ -184,7 +184,7 @@ int main(int argc, char *argv[])
 	int texBufferSize = textureWidth * textureHeight * 2;
 
 	// Allocate a memory buffer for the YUV422 data
-	pvr_ptr_t textureData = pvr_mem_alloc(texBufferSize);
+	pvr_ptr_t textureData = pvr_mem_malloc(texBufferSize);
 	unsigned char *yuvData = reinterpret_cast<unsigned char*>(memalign(32, texBufferSize));
 	sq_set32(yuvData, 0x80008000, texBufferSize);
 
