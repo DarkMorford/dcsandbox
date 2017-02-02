@@ -28,7 +28,7 @@ rm-elf:
 
 $(TARGET): $(OBJS)
 	$(KOS_CC) $(KOS_CFLAGS) $(KOS_LDFLAGS) -o $(TARGET) $(KOS_START) \
-		$(OBJS) $(OBJEXTRA) -logg -ltheoradec $(KOS_LIBS)
+		$(OBJS) $(OBJEXTRA) -logg -ltheoradec -lparallax $(KOS_LIBS)
 
 run: $(TARGET)
 	$(KOS_LOADER) $(TARGET)
