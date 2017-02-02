@@ -21,12 +21,10 @@ void queueDataPage(ogg_page *dataPage)
 	ogg_stream_pagein(&theoraStream, dataPage);
 }
 
-size_t fillSyncBuffer(FILE *inFile, ogg_sync_state *sync)
+size_t fillSyncBuffer(FILE *inFile, ogg_sync_state *sync, size_t bufferSize = 4096)
 {
-	const size_t BUFFER_SIZE = 4096;
-
-	char *buffer = ogg_sync_buffer(sync, BUFFER_SIZE);
-	size_t bytesRead = fread(buffer, 1, BUFFER_SIZE, inFile);
+	char *buffer = ogg_sync_buffer(sync, bufferSize);
+	size_t bytesRead = fread(buffer, 1, bufferSize, inFile);
 	ogg_sync_wrote(sync, bytesRead);
 
 	return bytesRead;
