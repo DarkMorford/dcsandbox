@@ -27,8 +27,7 @@ rm-elf:
 	-rm -f $(TARGET) romdisk.*
 
 $(TARGET): $(OBJS)
-	$(KOS_CC) $(KOS_CFLAGS) $(KOS_LDFLAGS) -o $(TARGET) $(KOS_START) \
-		$(OBJS) $(OBJEXTRA) -logg -ltheoradec -lparallax $(KOS_LIBS)
+	kos-c++ -o $(TARGET) $(OBJS) -logg -ltheoradec -lparallax
 
 run: $(TARGET)
 	$(KOS_LOADER) $(TARGET)
