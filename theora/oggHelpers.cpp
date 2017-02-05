@@ -2,6 +2,15 @@
 
 #include <kos/dbglog.h>
 
+size_t fillSyncBuffer(FILE *mediaFile, ogg_sync_state &oggSync, size_t bufferSize)
+{
+	char *buffer = ogg_sync_buffer(&oggSync, bufferSize);
+	size_t bytesRead = fread(buffer, 1, bufferSize, mediaFile);
+	ogg_sync_wrote(&oggSync, bytesRead);
+	
+	return bytesRead;
+}
+
 OggStreamCollection getOggStreams(ogg_sync_state &oggSync)
 {
 	OggStreamCollection streams;

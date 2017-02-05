@@ -1,11 +1,15 @@
 #ifndef OGGHELPERS_H
 #define OGGHELPERS_H
 
+#include <cstdio>
 #include <map>
+
 #include <ogg/ogg.h>
 #include <theora/theoradec.h>
 
 typedef std::map<int, ogg_stream_state> OggStreamCollection;
+
+size_t fillSyncBuffer(FILE *mediaFile, ogg_sync_state &oggSync, size_t bufferSize = 4096);
 
 // This function assumes that the sync state's buffer
 // already contains enough data to locate all the streams
