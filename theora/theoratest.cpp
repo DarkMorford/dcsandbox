@@ -105,7 +105,12 @@ int main(int argc, char *argv[])
 
 	// For testing, just grab the first frame
 	ogg_packet dataPacket;
-	ogg_stream_packetout(&theoraStream, &dataPacket);
+	while (ogg_stream_packetout(&theoraStream, &dataPacket) != 1)
+	{
+		fillSyncBuffer(videoFile, syncState);
+		flushSyncBuffer(syncState, streams);
+	}
+
 	th_decode_packetin(theoraDecoder, &dataPacket, NULL);
 
 	th_ycbcr_buffer videoFrame;
@@ -121,7 +126,6 @@ int main(int argc, char *argv[])
 	unsigned char *yuvData = reinterpret_cast<unsigned char*>(memalign(32, texBufferSize));
 	sq_set32(yuvData, 0x00800080, texBufferSize);
 
-	// TODO: Fix this function to consider the texture width
 	convertYUV420pTo422(yuvData, videoFrame, textureWidth);
 
 	// Copy the YUV422 data to the PVR's memory
@@ -140,8 +144,8 @@ int main(int argc, char *argv[])
 	vector_t transformedVerts[4];
 	plx_mat_transform(verts, transformedVerts, 4, 16);
 
-	float rightLimit = 320.0f / (float)textureWidth;
-	float bottomLimit = 240.0f / (float)textureHeight;
+	float rightLimit  = videoFrame[0].width  / (float)textureWidth;
+	float bottomLimit = videoFrame[0].height / (float)textureHeight;
 
 	bool exitProgram = false;
 	while(!exitProgram)
