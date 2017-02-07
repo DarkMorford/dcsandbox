@@ -10,13 +10,13 @@ inline int calculateArrayIndex(int x, int y, int width)
 void convertYUV420pTo422(unsigned char *outBuffer, const th_ycbcr_buffer &inBuffer, int textureWidth)
 {
 	const th_img_plane &Y  = inBuffer[0];
-	dbglog(DBG_INFO, "Y Plane : %d x %d, %d-byte stride\n", Y.width, Y.height, Y.stride);
+//	dbglog(DBG_INFO, "Y Plane : %d x %d, %d-byte stride\n", Y.width, Y.height, Y.stride);
 
 	const th_img_plane &Cb = inBuffer[1];
-	dbglog(DBG_INFO, "Cb Plane: %d x %d, %d-byte stride\n", Cb.width, Cb.height, Cb.stride);
+//	dbglog(DBG_INFO, "Cb Plane: %d x %d, %d-byte stride\n", Cb.width, Cb.height, Cb.stride);
 
 	const th_img_plane &Cr = inBuffer[2];
-	dbglog(DBG_INFO, "Cr Plane: %d x %d, %d-byte stride\n", Cr.width, Cr.height, Cr.stride);
+//	dbglog(DBG_INFO, "Cr Plane: %d x %d, %d-byte stride\n", Cr.width, Cr.height, Cr.stride);
 
 	const int frameWidth  = Y.width;
 	const int frameHeight = Y.height;

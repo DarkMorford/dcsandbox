@@ -60,6 +60,12 @@ int main(int argc, char *argv[])
 	vector_t cameraUp      = { 0.0f, 1.0f,  0.0f, 0.0f };
 	plx_mat3d_lookat(&cameraPosition, &cameraTarget, &cameraUp);
 
+	plx_mat_identity();
+	plx_mat3d_apply_all();
+
+	vector_t transformedVerts[4];
+	plx_mat_transform(verts, transformedVerts, 4, 16);
+
 	// Open the video file
 	FILE *videoFile = fopen("/rd/320x240.ogg", "rb");
 
@@ -103,53 +109,47 @@ int main(int argc, char *argv[])
 	if (theoraDecoder == NULL)
 		dbglog(DBG_ERROR, "Error initializing Theora decoder for stream %d\n", theoraSerial);
 
-	// For testing, just grab the first frame
-	ogg_packet dataPacket;
-	while (ogg_stream_packetout(&theoraStream, &dataPacket) != 1)
-	{
-		fillSyncBuffer(videoFile, syncState);
-		flushSyncBuffer(syncState, streams);
-	}
-
-	th_decode_packetin(theoraDecoder, &dataPacket, NULL);
-
-	th_ycbcr_buffer videoFrame;
-	th_decode_ycbcr_out(theoraDecoder, videoFrame);
-
 	// Get frame metadata
-	int textureWidth  = nextPowerOfTwo(videoFrame[0].width);
-	int textureHeight = nextPowerOfTwo(videoFrame[0].height);
+	int textureWidth  = nextPowerOfTwo(theoraInfo.frame_width);
+	int textureHeight = nextPowerOfTwo(theoraInfo.frame_height);
 	int texBufferSize = textureWidth * textureHeight * 2;
 
 	// Allocate a memory buffer for the YUV422 data
 	pvr_ptr_t textureData = pvr_mem_malloc(texBufferSize);
 	unsigned char *yuvData = reinterpret_cast<unsigned char*>(memalign(32, texBufferSize));
-	sq_set32(yuvData, 0x00800080, texBufferSize);
-
-	convertYUV420pTo422(yuvData, videoFrame, textureWidth);
-
-	// Copy the YUV422 data to the PVR's memory
-	sq_cpy(textureData, yuvData, texBufferSize);
 
 	pvr_poly_cxt_t stripContext;
+	pvr_poly_hdr_t stripHeader;
 	pvr_poly_cxt_txr(&stripContext, PVR_LIST_OP_POLY, PVR_TXRFMT_YUV422 | PVR_TXRFMT_NONTWIDDLED,
 		textureWidth, textureHeight, textureData, PVR_FILTER_NONE);
 	stripContext.gen.culling = PVR_CULLING_CW;
-	pvr_poly_hdr_t stripHeader;
 	pvr_poly_compile(&stripHeader, &stripContext);
 
-	plx_mat_identity();
-	plx_mat3d_apply_all();
+	// For testing, just grab the first frame
+	ogg_packet dataPacket;
+	th_ycbcr_buffer videoFrame;
 
-	vector_t transformedVerts[4];
-	plx_mat_transform(verts, transformedVerts, 4, 16);
-
-	float rightLimit  = videoFrame[0].width  / (float)textureWidth;
-	float bottomLimit = videoFrame[0].height / (float)textureHeight;
+	float rightLimit  = theoraInfo.frame_width  / (float)textureWidth;
+	float bottomLimit = theoraInfo.frame_height / (float)textureHeight;
 
 	bool exitProgram = false;
-	while(!exitProgram)
+	while(!exitProgram && !feof(videoFile))
 	{
+		while (ogg_stream_packetout(&theoraStream, &dataPacket) != 1)
+		{
+			fillSyncBuffer(videoFile, syncState);
+			flushSyncBuffer(syncState, streams);
+		}
+
+		th_decode_packetin(theoraDecoder, &dataPacket, NULL);
+		th_decode_ycbcr_out(theoraDecoder, videoFrame);
+
+		sq_set32(yuvData, 0x00800080, texBufferSize);
+		convertYUV420pTo422(yuvData, videoFrame, textureWidth);
+
+		// Copy the YUV422 data to the PVR's memory
+		sq_cpy(textureData, yuvData, texBufferSize);
+
 		plx_mat_identity();
 		plx_mat3d_apply_all();
 
