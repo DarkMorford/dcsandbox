@@ -7,7 +7,7 @@ size_t fillSyncBuffer(FILE *mediaFile, ogg_sync_state &oggSync, size_t bufferSiz
 	char *buffer = ogg_sync_buffer(&oggSync, bufferSize);
 	size_t bytesRead = fread(buffer, 1, bufferSize, mediaFile);
 	ogg_sync_wrote(&oggSync, bytesRead);
-	
+
 	return bytesRead;
 }
 
@@ -62,6 +62,16 @@ void flushSyncBuffer(ogg_sync_state &oggSync, OggStreamCollection &streams)
 	while (ogg_sync_pageout(&oggSync, &dataPage) == 1)
 	{
 		queueDataPage(&dataPage, streams);
+	}
+}
+
+void flushOggStream(ogg_stream_state &stream)
+{
+	ogg_packet dataPacket;
+
+	while (ogg_stream_packetout(&stream, &dataPacket) == 1)
+	{
+		// Do nothing here, just throw away the packet.
 	}
 }
 

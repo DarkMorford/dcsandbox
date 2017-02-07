@@ -18,6 +18,7 @@ OggStreamCollection getOggStreams(ogg_sync_state &oggSync);
 void queueDataPage(ogg_page *dataPage, OggStreamCollection &streams);
 
 void flushSyncBuffer(ogg_sync_state &oggSync, OggStreamCollection &streams);
+void flushOggStream(ogg_stream_state &stream);
 
 bool isTheoraStream(ogg_stream_state &stream);
 
