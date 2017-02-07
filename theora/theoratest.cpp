@@ -117,6 +117,7 @@ int main(int argc, char *argv[])
 	// Allocate a memory buffer for the YUV422 data
 	pvr_ptr_t textureData = pvr_mem_malloc(texBufferSize);
 	unsigned char *yuvData = reinterpret_cast<unsigned char*>(memalign(32, texBufferSize));
+	sq_set32(yuvData, 0x00800080, texBufferSize);
 
 	pvr_poly_cxt_t stripContext;
 	pvr_poly_hdr_t stripHeader;
@@ -144,11 +145,10 @@ int main(int argc, char *argv[])
 		th_decode_packetin(theoraDecoder, &dataPacket, NULL);
 		th_decode_ycbcr_out(theoraDecoder, videoFrame);
 
-		sq_set32(yuvData, 0x00800080, texBufferSize);
-		convertYUV420pTo422(yuvData, videoFrame, textureWidth);
-
 		// Copy the YUV422 data to the PVR's memory
-		sq_cpy(textureData, yuvData, texBufferSize);
+		convertYUV420pTo422(yuvData, videoFrame, textureWidth);
+//		sq_cpy(textureData, yuvData, texBufferSize);
+		pvr_txr_load_dma(yuvData, textureData, texBufferSize, 1, NULL, NULL);
 
 		plx_mat_identity();
 		plx_mat3d_apply_all();
