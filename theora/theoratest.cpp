@@ -144,14 +144,18 @@ int main(int argc, char *argv[])
 
 		th_decode_packetin(theoraDecoder, &dataPacket, NULL);
 		th_decode_ycbcr_out(theoraDecoder, videoFrame);
+		
+		// Clear out any other streams
+		for (OggStreamCollection::iterator it = streams.begin(); it != streams.end(); ++it)
+		{
+			if (it->first != theoraSerial)
+				flushOggStream(it->second);
+		}
 
 		// Copy the YUV422 data to the PVR's memory
 		convertYUV420pTo422(yuvData, videoFrame, textureWidth);
 //		sq_cpy(textureData, yuvData, texBufferSize);
 		pvr_txr_load_dma(yuvData, textureData, texBufferSize, 1, NULL, NULL);
-
-		plx_mat_identity();
-		plx_mat3d_apply_all();
 
 		pvr_wait_ready();
 		pvr_scene_begin();
