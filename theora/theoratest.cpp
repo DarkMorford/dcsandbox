@@ -154,8 +154,8 @@ int main(int argc, char *argv[])
 
 		// Copy the YUV422 data to the PVR's memory
 		convertYUV420pTo422(yuvData, videoFrame, textureWidth);
-//		sq_cpy(textureData, yuvData, texBufferSize);
-		pvr_txr_load_dma(yuvData, textureData, texBufferSize, 1, NULL, NULL);
+		sq_cpy(textureData, yuvData, texBufferSize);
+//		pvr_txr_load_dma(yuvData, textureData, texBufferSize, 1, NULL, NULL);
 
 		pvr_wait_ready();
 		pvr_scene_begin();
