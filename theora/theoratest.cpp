@@ -5,6 +5,7 @@
 
 #include "convertYUV.h"
 #include "oggHelpers.h"
+#include "threadFuncs.h"
 
 KOS_INIT_FLAGS(INIT_DEFAULT);
 
