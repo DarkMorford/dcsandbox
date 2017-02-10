@@ -14,6 +14,8 @@ KOS_INIT_ROMDISK(romdisk);
 
 int theoraSerial = 0;
 
+bool streamsWaitingForData = false;
+
 inline int nextPowerOfTwo(int n)
 {
 	// Special-case negative values
@@ -42,6 +44,10 @@ int main(int argc, char *argv[])
 {
 	dbglog_set_level(DBG_INFO);
 	dbglog(DBG_NOTICE, "%s\n", th_version_string());
+
+	// Initialize thread-control structures
+	condvar_t streamsCondition = COND_INITIALIZER;
+	mutex_t   streamsMutex     = ERRORCHECK_MUTEX_INITIALIZER;
 
 	// Set up PVR for video display
 	pvr_init_defaults();
@@ -80,6 +86,7 @@ int main(int argc, char *argv[])
 	dbglog(DBG_INFO, "Collection contains %d stream(s)\n", streams.size());
 
 	flushSyncBuffer(syncState, streams);
+	streamsWaitingForData = false;
 
 	for (OggStreamCollection::iterator it = streams.begin(); it != streams.end(); ++it)
 	{
@@ -134,6 +141,17 @@ int main(int argc, char *argv[])
 	float rightLimit  = theoraInfo.frame_width  / (float)textureWidth;
 	float bottomLimit = theoraInfo.frame_height / (float)textureHeight;
 
+	// Spawn a thread to keep the data buffer full
+	fileReaderParams readerInfo;
+	readerInfo.mediaFile = videoFile;
+	readerInfo.mediaSync = &syncState;
+	readerInfo.oggStreams = &streams;
+	readerInfo.bufferSize = 4096;
+	readerInfo.streamNeedsData = &streamsWaitingForData;
+	readerInfo.condition = &streamsCondition;
+	readerInfo.mutex = &streamsMutex;
+	kthread_t *readerThread = thd_create(1, fileReaderThread, &readerInfo);
+
 	bool exitProgram = false;
 	while(!exitProgram && !feof(videoFile))
 	{
@@ -145,7 +163,7 @@ int main(int argc, char *argv[])
 
 		th_decode_packetin(theoraDecoder, &dataPacket, NULL);
 		th_decode_ycbcr_out(theoraDecoder, videoFrame);
-		
+
 		// Clear out any other streams
 		for (OggStreamCollection::iterator it = streams.begin(); it != streams.end(); ++it)
 		{
