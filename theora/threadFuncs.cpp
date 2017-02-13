@@ -19,7 +19,10 @@ void* fileReaderThread(void *threadParams)
 		// Read data from file
 		size_t bytesRead = fillSyncBuffer(params->mediaFile, *(params->mediaSync), params->bufferSize);
 		if (bytesRead == 0)
+		{
+			mutex_unlock(params->mutex);
 			return NULL;
+		}
 		
 		// Pump it into the streams
 		flushSyncBuffer(*(params->mediaSync), *(params->oggStreams));

@@ -155,11 +155,15 @@ int main(int argc, char *argv[])
 	bool exitProgram = false;
 	while(!exitProgram && !feof(videoFile))
 	{
+		mutex_lock(&streamsMutex);
 		while (ogg_stream_packetout(&theoraStream, &dataPacket) != 1)
 		{
-			fillSyncBuffer(videoFile, syncState);
-			flushSyncBuffer(syncState, streams);
+			streamsWaitingForData = true;
+			cond_signal(&streamsCondition);
+			mutex_unlock(&streamsMutex);
+			mutex_lock(&streamsMutex);
 		}
+		mutex_unlock(&streamsMutex);
 
 		th_decode_packetin(theoraDecoder, &dataPacket, NULL);
 		th_decode_ycbcr_out(theoraDecoder, videoFrame);
